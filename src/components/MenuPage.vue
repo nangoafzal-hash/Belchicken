@@ -5,38 +5,67 @@
     <header class="menu-header">
       <div class="menu-header__inner">
         <div class="menu-header__brand">
-          <!-- Logo SVG Belchiken -->
           <svg class="menu-header__logo-svg" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <!-- Fond rond rouge foncé -->
             <circle cx="26" cy="26" r="26" fill="#c0392b"/>
-            <!-- Flamme gauche -->
             <path d="M18 34 C14 28 16 20 21 17 C19 22 22 25 20 30 C23 26 24 21 27 18 C26 24 29 27 26 34Z" fill="#f39c12"/>
-            <!-- Flamme droite -->
             <path d="M34 34 C38 28 36 20 31 17 C33 22 30 25 32 30 C29 26 28 21 25 18 C26 24 23 27 26 34Z" fill="#f39c12"/>
-            <!-- Corps poulet stylisé -->
             <ellipse cx="26" cy="33" rx="9" ry="7" fill="#fff"/>
-            <!-- Tête -->
             <circle cx="26" cy="22" r="5" fill="#fff"/>
-            <!-- Bec -->
             <path d="M26 24 L24.2 25.5 L27.8 25.5Z" fill="#f39c12"/>
-            <!-- Oeil -->
             <circle cx="27.5" cy="21.5" r="1" fill="#c0392b"/>
-            <!-- Crête -->
             <path d="M24 18 C24 15 26 14 26 17 C26 14 28 13 28 17 C28 14 30 14 29 17" stroke="#e74c3c" stroke-width="1.2" fill="none" stroke-linecap="round"/>
           </svg>
           <div>
-            <h1 class="menu-header__title">Belchiken</h1>
-            <p class="menu-header__tagline">Le meilleur poulet frit de Ouaga</p>
+            <p class="menu-header__eyebrow">Belchiken</p>
+            <h1 class="menu-header__title">Poulet Frit</h1>
           </div>
         </div>
 
-        <!-- Bouton panier (mini) -->
-        <button class="cart-bubble" @click="cart.toggleCart()" aria-label="Voir le panier">
-          <span class="cart-bubble__icon">🛒</span>
-          <span v-if="cart.totalCount > 0" class="cart-bubble__badge">{{ cart.totalCount }}</span>
-        </button>
+        <div class="menu-header__actions">
+          <button type="button" class="menu-header__nav" @click="scrollToMenu">Menu</button>
+          <button class="cart-bubble" @click="cart.toggleCart()" aria-label="Ouvrir le panier">
+            <span class="cart-bubble__icon">🛒</span>
+            <span v-if="cart.totalCount > 0" class="cart-bubble__badge">{{ cart.totalCount }}</span>
+          </button>
+        </div>
       </div>
     </header>
+
+    <Transition name="hero-fade" appear>
+      <section class="menu-hero">
+        <div class="menu-hero__visual" :style="{ backgroundImage: heroBackground }"></div>
+        <div class="menu-hero__content">
+          <div class="menu-hero__badge">
+            <span>🚀 Livraison rapide</span>
+          </div>
+          <div class="menu-hero__headline">
+            <h2 class="menu-hero__title">{{ heroSlide.title }}</h2>
+            <h3 class="menu-hero__title menu-hero__title--accent">{{ heroSlide.accent }}</h3>
+          </div>
+          <p class="menu-hero__subtitle">{{ heroSlide.subtitle }}</p>
+          <div class="menu-hero__actions">
+            <button class="hero-cta" @click="scrollToMenu">
+              Commander maintenant <span aria-hidden="true">→</span>
+            </button>
+            <button class="hero-pill" @click="scrollToMenu">Voir le menu</button>
+          </div>
+          <div class="hero-indicators">
+            <button
+              v-for="(slide, index) in heroSlides"
+              :key="index"
+              :class="['hero-indicator', { 'hero-indicator--active': heroIndex === index }]"
+              @click="heroIndex = index"
+              type="button"
+              aria-label="Changer l'image du hero"
+            />
+          </div>
+          <div class="menu-hero__stats">
+            <div class="stat-pill">⏱ 25–35 min</div>
+            <div class="stat-pill">📍 Ouaga centre</div>
+          </div>
+        </div>
+      </section>
+    </Transition>
 
     <!-- ── Barre de recherche ──────────────────────────────── -->
     <div class="search-bar-wrapper">
@@ -73,18 +102,30 @@
       </p>
     </div>
 
-    <!-- ── Grille des articles ─────────────────────────────── -->
-    <main class="menu-grid" v-if="filteredItems.length > 0">
-      <TransitionGroup name="card-list" tag="div" class="menu-grid__inner">
-        <MenuCard
-          v-for="item in filteredItems"
-          :key="item.id"
-          :item="item"
-          @open-modal="openModal"
-          @add-to-cart="addToCart"
-        />
-      </TransitionGroup>
-    </main>
+    <template v-if="filteredItems.length > 0">
+      <!-- ── Grille des articles ─────────────────────────────── -->
+      <main
+        ref="menuSection"
+        :class="['menu-grid', { 'menu-grid--visible': menuVisible }]"
+      >
+        <TransitionGroup name="card-list" tag="div" class="menu-grid__inner">
+          <MenuCard
+            v-for="item in filteredItems"
+            :key="item.id"
+            :item="item"
+            @open-modal="openModal"
+            @add-to-cart="addToCart"
+          />
+        </TransitionGroup>
+      </main>
+
+      <section class="menu-footer">
+        <div class="menu-footer__block">
+          <p class="menu-footer__lead">Livraison ultra rapide • Plus de plats, plus de saveurs • Paiement simple</p>
+          <p class="menu-footer__description">Commandez votre poulet frit premium, vos burgers croustillants et vos accompagnements gourmands, le tout livré chaud chez vous.</p>
+        </div>
+      </section>
+    </template>
 
     <!-- ── État vide ───────────────────────────────────────── -->
     <div v-else class="menu-empty">
@@ -111,8 +152,8 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { MENU_ITEMS } from '@/data/menuData.ts'
 import { useCartStore } from '@/stores/cartStore'
 import MenuCard from '@/components/MenuCard.vue'
@@ -120,6 +161,39 @@ import CategoryFilter from '@/components/CategoryFilter.vue'
 import CustomizeModal from '@/components/CustomizeModal.vue'
 
 const cart = useCartStore()
+const menuSection = ref<HTMLElement | null>(null)
+
+const heroSlides = [
+  {
+    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1600&q=80',
+    title: 'Poulet frit premium',
+    accent: 'Livré chaud, croustillant et prêt à dévorer',
+    subtitle: 'Commandez votre box de poulet frit, accompagnements et sauces. Livraison rapide dans Ouagadougou.',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450f859349?auto=format&fit=crop&w=1600&q=80',
+    title: 'Croustillant à souhait',
+    accent: 'Un goût qui fond dans la bouche',
+    subtitle: 'Savourez des morceaux dorés, servis avec nos sauces maison.',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=1600&q=80',
+    title: 'Saveurs épicées',
+    accent: 'Un punch gourmand pour chaque commande',
+    subtitle: 'Ajoutez du piquant, du croustillant et de la générosité à votre repas.',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=1600&q=80',
+    title: 'Box à partager',
+    accent: 'Idéal pour les repas entre amis',
+    subtitle: 'Plus de plats, plus de plaisir avec des portions généreuses.',
+  },
+]
+const heroIndex = ref(0)
+const heroSlide = computed(() => heroSlides[heroIndex.value])
+const menuVisible = ref(true)
+let heroTimer: ReturnType<typeof setInterval> | null = null
+let observer: IntersectionObserver | null = null
 
 // ── State ────────────────────────────────────────────────────
 const activeCategory = ref('all')
@@ -164,6 +238,39 @@ function resetFilters() {
   activeCategory.value = 'all'
   searchQuery.value    = ''
 }
+
+function scrollToMenu() {
+  menuSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+const heroBackground = computed(
+  () => `linear-gradient(180deg, rgba(10, 10, 10, 0.05), rgba(0, 0, 0, 0.1)), url("${heroSlide.value.image}")`
+)
+
+function startHeroRotation() {
+  heroTimer = setInterval(() => {
+    heroIndex.value = (heroIndex.value + 1) % heroSlides.length
+  }, 10000)
+}
+
+function setupMenuObserver() {
+  if (!menuSection.value) return
+  observer = new IntersectionObserver(
+    ([entry]) => { menuVisible.value = entry.isIntersecting },
+    { threshold: 0.2 }
+  )
+  observer.observe(menuSection.value)
+}
+
+onMounted(() => {
+  startHeroRotation()
+  setupMenuObserver()
+})
+
+onUnmounted(() => {
+  if (heroTimer) clearInterval(heroTimer)
+  if (observer && menuSection.value) observer.unobserve(menuSection.value)
+})
 
 // ── Toast ─────────────────────────────────────────────────────
 function showToast(msg) {
@@ -217,18 +324,376 @@ function showToast(msg) {
 
 .menu-header__title {
   color: #fff;
-  font-size: 1.6rem;
+  font-size: 1.3rem;
   font-weight: 900;
   margin: 0;
   letter-spacing: -0.5px;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
-.menu-header__tagline {
-  color: rgba(255,255,255,0.85);
-  font-size: 0.78rem;
+.menu-header__eyebrow {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.8rem;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.menu-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-header__nav {
+  background: rgba(255,255,255,0.18);
+  color: #23110a;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.menu-header {
+  background: rgba(8, 8, 8, 0.95);
+  backdrop-filter: blur(12px);
+}
+
+.menu-header__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.menu-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.menu-header__nav {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 10px 18px;
+}
+
+.menu-header__nav:hover,
+.menu-header__nav:focus {
+  background: rgba(255,255,255,0.12);
+  transform: translateY(-1px);
+}
+
+.cart-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 52px;
+  border: none;
+  border-radius: 999px;
+  padding: 0 16px;
+  background: linear-gradient(135deg, #ff4f6d, #ffb347);
+  color: #111;
+  font-weight: 800;
+  box-shadow: 0 18px 40px rgba(255, 84, 105, 0.22);
+  cursor: pointer;
+}
+
+.cart-bubble__icon {
+  font-size: 1.05rem;
+}
+
+.menu-hero {
+  margin: 20px calc(50vw - 50%) 0;
+  width: 100vw;
+  min-height: 44vh;
+  position: relative;
+  background: #111;
+  border-radius: 0 0 32px 32px;
+  overflow: hidden;
+  box-shadow: 0 28px 90px rgba(0,0,0,0.28);
+  padding-bottom: 26px;
+}
+
+.menu-hero__visual {
+  min-height: inherit;
+  background-color: #141414;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.hero-indicators {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.hero-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.65);
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.hero-indicator--active {
+  background: #ff8a5c;
+  transform: scale(1.2);
+  box-shadow: 0 0 0 4px rgba(255, 138, 92, 0.12);
+}
+
+.menu-grid {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.menu-grid--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.menu-hero__visual {
+  background-size: cover;
+  background-position: center;
+  min-height: 100%;
+  position: absolute;
+  inset: 0;
+  transition: background-image 0.9s ease;
+  filter: saturate(1.18) contrast(1.08) brightness(1.16);
+}
+
+.menu-hero__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  padding: 42px 32px 32px;
+  max-width: min(900px, 92vw);
+}
+
+.menu-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 88, 109, 0.05), transparent 26%),
+              radial-gradient(circle at bottom left, rgba(255, 182, 63, 0.05), transparent 20%),
+              linear-gradient(180deg, rgba(0,0,0,0.00), rgba(0,0,0,0.08));
+  z-index: 1;
+}
+
+.menu-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: rgba(255,69,120,0.16);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #fff;
+  font-size: 0.96rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.menu-hero__headline {
+  display: grid;
+  gap: 6px;
+}
+
+.menu-hero__title {
+  color: #fff;
+  font-size: clamp(3rem, 5vw, 4.4rem);
+  font-weight: 900;
+  line-height: 0.95;
   margin: 0;
-  font-weight: 500;
+}
+
+.menu-hero__title--accent {
+  background: linear-gradient(90deg, #ff4f6d, #ffb347);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-size: clamp(3rem, 5vw, 4.4rem);
+}
+
+.menu-hero__subtitle {
+  color: rgba(255,255,255,0.72);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 560px;
+  margin: 0;
+}
+
+.menu-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hero-cta,
+.hero-pill {
+  border: none;
+  border-radius: 999px;
+  padding: 16px 26px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #ff4977 0%, #ffb347 55%, #ffd05b 100%);
+  color: #111;
+  box-shadow: 0 20px 44px rgba(255, 76, 113, 0.32);
+}
+
+.hero-cta:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+.hero-pill {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.hero-pill:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.12);
+}
+
+.hero-pill:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.18);
+}
+
+.menu-hero__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.menu-hero__title {
+  max-width: 680px;
+}
+
+.menu-hero__badge {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.menu-hero__badge span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border-radius: 18px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+}
+
+.menu-footer {
+  max-width: 1100px;
+  margin: 20px auto 0;
+  padding: 20px 24px;
+  background: rgba(15, 15, 15, 0.92);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.22);
+}
+
+.menu-footer__block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-footer__lead {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.menu-footer__description {
+  margin: 0;
+  color: rgba(255,255,255,0.72);
+  line-height: 1.7;
+}
+
+.highlight-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary);
+}
+
+.highlight-card strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.highlight-card p {
+  margin: 0;
+  color: rgba(255,255,255,0.8);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.highlight-card--pulse {
+  animation: highlight-pulse 3.5s ease-in-out infinite;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.hero-fade-enter-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.hero-fade-enter-from {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.hero-fade-enter-to {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ── Bouton panier ────────────────────────────────────────── */

@@ -144,13 +144,20 @@
                 <div class="checkout__zone-recap">
                   <span class="checkout__zone-icon">🛵</span>
                   <div class="checkout__zone-info">
-                    <p class="checkout__zone-name">{{ cart.selectedZone?.name }}</p>
+                    <p class="checkout__zone-name">
+                      {{ cart.selectedZone ? cart.selectedZone.name : 'Zone non sélectionnée' }}
+                    </p>
                     <p class="checkout__zone-detail">
-                      {{ formatPrice(cart.deliveryFee) }} · ⏱ {{ zoneDelay }}
+                      {{ cart.selectedZone ? formatPrice(cart.deliveryFee) + ' · ⏱ ' + zoneDelay : 'Sélectionnez une zone dans le panier' }}
                     </p>
                   </div>
-                  <span class="checkout__zone-fee">{{ formatPrice(cart.deliveryFee) }}</span>
+                  <span class="checkout__zone-fee">
+                    {{ cart.selectedZone ? formatPrice(cart.deliveryFee) : 'À calculer' }}
+                  </span>
                 </div>
+                <p v-if="!hasDeliveryZone.value" class="checkout__zone-warning">
+                  ⚠️ Veuillez sélectionner votre zone de livraison dans le panier avant d'afficher l'aperçu.
+                </p>
 
               </div>
 
@@ -177,7 +184,8 @@
                 </button>
                 <button
                   class="checkout__btn checkout__btn--primary"
-                  :disabled="!isFormValid"
+                  :disabled="!canPreview"
+                  :title="!hasDeliveryZone.value ? 'Sélectionnez une zone de livraison' : !isFormValid ? 'Complétez le formulaire' : ''"
                   @click="goToPreview"
                 >
                   Aperçu du bon 👁️
@@ -256,6 +264,9 @@ const isFormValid = computed(() => {
   const e = validateCustomer(customer.value)
   return !e.name && !e.phone && !e.address
 })
+
+const hasDeliveryZone = computed(() => !!cart.selectedZone)
+const canPreview = computed(() => isFormValid.value && hasDeliveryZone.value)
 
 function touchField(field: string) {
   touched.value.add(field)
@@ -587,6 +598,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   color: var(--color-primary,#e67e22);
   font-weight: 800;
   font-size: 0.95rem;
+}
+
+.checkout__zone-warning {
+  margin-top: 12px;
+  color: #f5c469;
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.18);
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 0.82rem;
 }
 
 /* ── Prévisualisation ─────────────────────────────────────── */
