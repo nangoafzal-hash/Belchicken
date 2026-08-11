@@ -1,0 +1,142 @@
+/* ============================================================
+   BELCHIKEN — CSS Global & Variables de thème
+   Thème : chaud orangé/rouge (inspiration KFC)
+   ============================================================ */
+
+/* ── Variables de couleur ────────────────────────────────── */
+:root {
+  --color-primary:       #e67e22;   /* Orange chaud */
+  --color-primary-dark:  #cf6d17;   /* Orange foncé (hover) */
+  --color-primary-light: #fff3e6;   /* Orange très clair */
+  --color-secondary:     #c0392b;   /* Rouge profond */
+  --color-secondary-dark:#922b21;
+  --color-bg:            #1c0f07;   /* Fond sombre chaud */
+  --color-surface:       #ffffff;
+  --color-text:          #1a1a1a;
+  --color-text-muted:    #777777;
+  --color-border:        #ececec;
+  --color-success:       #27ae60;
+  --color-danger:        #e74c3c;
+
+  --radius-sm:    8px;
+  --radius-md:    14px;
+  --radius-lg:    24px;
+  --radius-full:  9999px;
+
+  --shadow-sm:  0 1px 6px rgba(0,0,0,0.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.14);
+  --shadow-brand: 0 4px 20px rgba(230, 126, 34, 0.3);
+
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* ── Background : sombre chaud + motif géométrique ── */
+  background-color: #1c0f07;
+  background-image:
+    /* Grille diagonale fine en orange très transparent */
+    repeating-linear-gradient(
+      45deg,
+      rgba(230, 126, 34, 0.045) 0px,
+      rgba(230, 126, 34, 0.045) 1px,
+      transparent 1px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(230, 126, 34, 0.045) 0px,
+      rgba(230, 126, 34, 0.045) 1px,
+      transparent 1px,
+      transparent 28px
+    ),
+    /* Dégradé radial central — halo chaud au centre */
+    radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      rgba(192, 57, 43, 0.28) 0%,
+      transparent 70%
+    ),
+    /* Base sombre brun foncé */
+    linear-gradient(160deg, #2a1208 0%, #1c0f07 50%, #140a04 100%);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+/* ── Utilitaires ─────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Scrollbar personnalisée (Webkit) ────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+/* ── Focus visible (accessibilité) ──────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
